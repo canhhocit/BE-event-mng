@@ -32,3 +32,10 @@ Hệ thống phân quyền với các vai trò: `ADMIN`, `ORGANIZER` (Ban tổ c
 - Tự động sinh `TicketCode` (Mã vé độc nhất) sau khi thanh toán thành công.
 - Tự động sinh link **QR Code** nhúng vào vé để thuận tiện cho việc check-in.
 - **Tính năng Check-in**: Ban tổ chức dán mã vé để check-in tại cổng, trạng thái đổi từ `VALID` sang `USED`. Tránh tình trạng tái sử dụng vé.
+
+
+### Front-end: `npm run dev`
+    `http://localhost:5173/`
+<!-- Docker build & run 
+docker build -t event-service:0.0.1 .
+docker run --name event-service --network canhhocit-network -p 8080:8080 event-service:0.0.1 -->
