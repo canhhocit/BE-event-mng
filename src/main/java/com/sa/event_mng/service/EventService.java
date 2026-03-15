@@ -38,7 +38,8 @@ public class EventService {
         EventMapper eventMapper;
 
         @Transactional
-        @PreAuthorize("hasRole('ORGANIZER') or hasRole('ADMIN')")
+        // @PreAuthorize("hasRole('ORGANIZER') or hasRole('ADMIN')")
+        @PreAuthorize("hasRole('ORGANIZER')")
         public EventResponse create(EventRequest request) {
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 User organizer = userRepository.findByUsername(username)
@@ -68,7 +69,7 @@ public class EventService {
 
         public Page<EventResponse> getAllPublished(PageRequest pageRequest) {
                 Page<Event> events = eventRepository.findByStatus(EventStatus.PUBLISHED, pageRequest);
-            return events.map(eventMapper::toEventResponse);
+                return events.map(eventMapper::toEventResponse);
         }
 
         public EventResponse getById(Long id) {
@@ -140,6 +141,33 @@ public class EventService {
                         }
                 }
                 return images;
+        }
+
+        public Page<EventResponse> getAllForAdmin(String search, String status, PageRequest pageRequest) {
+                Page<Event> events;
+                boolean hasSearch = search != null && !search.isBlank();
+                boolean hasStatus = status != null && !status.isBlank();
+
+                if (hasSearch && hasStatus) {
+                        events = eventRepository.findByNameContainingIgnoreCaseAndStatus(
+                                        search, EventStatus.valueOf(status), pageRequest);
+                } else if (hasSearch) {
+                        events = eventRepository.findByNameContainingIgnoreCase(search, pageRequest);
+                } else if (hasStatus) {
+                        events = eventRepository.findByStatus(EventStatus.valueOf(status), pageRequest);
+                } else {
+                        events = eventRepository.findAll(pageRequest);
+                }
+                return events.map(eventMapper::toEventResponse);
+        }
+
+        @Transactional
+        @PreAuthorize("hasRole('ADMIN')")
+        public EventResponse updateStatus(Long id, EventStatus status) {
+                Event event = eventRepository.findById(id)
+                                .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+                event.setStatus(status);
+                return eventMapper.toEventResponse(eventRepository.save(event));
         }
 
 }

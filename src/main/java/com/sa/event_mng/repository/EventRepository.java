@@ -10,4 +10,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findByStatus(EventStatus status, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    Page<Event> findByNameContainingIgnoreCaseAndStatus(String name, EventStatus status, Pageable pageable);
+
 }
