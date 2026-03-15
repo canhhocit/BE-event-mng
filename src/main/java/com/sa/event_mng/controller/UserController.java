@@ -14,7 +14,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
@@ -22,51 +21,62 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
-    private final UserService userService;
+        private final UserService userService;
 
-    @Operation(summary = "Lấy thông tin của chính mình", description = "Lấy thông tin hồ sơ của người dùng hiện đang đăng nhập")
-    @GetMapping("/my-info")
-    public ApiResponse<UserResponse> getMyInfo() {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getMyInfo())
-                .build();
-    }
+        @Operation(summary = "Lấy thông tin của chính mình", description = "Lấy thông tin hồ sơ của người dùng hiện đang đăng nhập")
+        @GetMapping("/my-info")
+        public ApiResponse<UserResponse> getMyInfo() {
+                return ApiResponse.<UserResponse>builder()
+                                .result(userService.getMyInfo())
+                                .build();
+        }
 
+        @Operation(summary = "Lấy tất cả người dùng", description = "Lấy danh sách tất cả các người dùng đang hoạt động (Chỉ ADMIN)")
+        // @GetMapping
+        // public ApiResponse<Page<UserResponse>> getUsers(@RequestParam(defaultValue =
+        // "1") int page,
+        // @RequestParam(defaultValue = "10") int size) {
+        // PageRequest pageRequest = PageRequest.of(
+        // page - 1, size,
+        // Sort.by("createdAt").descending());
+        // return ApiResponse.<Page<UserResponse>>builder()
+        // .result(userService.getUsers(pageRequest))
+        // .build();
+        // }
+        @GetMapping
+        public ApiResponse<Page<UserResponse>> getUsers(
+                        @RequestParam(defaultValue = "1") int page,
+                        @RequestParam(defaultValue = "10") int size,
+                        @RequestParam(defaultValue = "") String search) {
+                PageRequest pageRequest = PageRequest.of(
+                                page - 1, size, Sort.by("createdAt").descending());
+                return ApiResponse.<Page<UserResponse>>builder()
+                                .result(userService.getUsers(search, pageRequest))
+                                .build();
+        }
 
-    @Operation(summary = "Lấy tất cả người dùng", description = "Lấy danh sách tất cả các người dùng đang hoạt động (Chỉ ADMIN)")
-    @GetMapping
-    public ApiResponse<Page<UserResponse>> getUsers(@RequestParam(defaultValue = "1") int page,
-                                                    @RequestParam(defaultValue = "10") int size) {
-        PageRequest pageRequest = PageRequest.of(
-                page - 1, size,
-                Sort.by("createdAt").descending());
-        return ApiResponse.<Page<UserResponse>>builder()
-                .result(userService.getUsers(pageRequest))
-                .build();
-    }
+        @Operation(summary = "Lấy người dùng theo Username", description = "Lấy thông tin cụ thể của người dùng theo username")
+        @GetMapping("/{username}")
+        public ApiResponse<UserResponse> getUser(@PathVariable String username) {
+                return ApiResponse.<UserResponse>builder()
+                                .result(userService.getUserByUsername(username))
+                                .build();
+        }
 
-    @Operation(summary = "Lấy người dùng theo Username", description = "Lấy thông tin cụ thể của người dùng theo username")
-    @GetMapping("/{username}")
-    public ApiResponse<UserResponse> getUser(@PathVariable String username) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getUserByUsername(username))
-                .build();
-    }
+        @Operation(summary = "Cập nhật người dùng", description = "Cập nhật thông tin hồ sơ của một người dùng cụ thể")
+        @PutMapping("/{username}")
+        public ApiResponse<UserResponse> updateUser(@PathVariable String username,
+                        @RequestBody @Valid UserUpdateRequest request) {
+                return ApiResponse.<UserResponse>builder()
+                                .result(userService.updateUser(username, request))
+                                .build();
+        }
 
-    @Operation(summary = "Cập nhật người dùng", description = "Cập nhật thông tin hồ sơ của một người dùng cụ thể")
-    @PutMapping("/{username}")
-    public ApiResponse<UserResponse> updateUser(@PathVariable String username,
-            @RequestBody @Valid UserUpdateRequest request) {
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.updateUser(username, request))
-                .build();
-    }
-
-    @Operation(summary = "Xóa người dùng", description = "Vô hiệu hóa tài khoản người dùng theo username(ADMIN)")
-    @DeleteMapping("/{username}")
-    public ApiResponse<String> deleteUser(@PathVariable String username) {
-        return ApiResponse.<String>builder()
-                .result(userService.deleteUser(username))
-                .build();
-    }
+        @Operation(summary = "Xóa người dùng", description = "Vô hiệu hóa tài khoản người dùng theo username(ADMIN)")
+        @DeleteMapping("/{username}")
+        public ApiResponse<String> deleteUser(@PathVariable String username) {
+                return ApiResponse.<String>builder()
+                                .result(userService.deleteUser(username))
+                                .build();
+        }
 }

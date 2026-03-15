@@ -36,23 +36,6 @@ public class UserService {
         return userMapper.toUserResponse(user);
     }
 
-    // @PreAuthorize("isAuthenticated()")
-    // public UserResponse updateMyProfile(ProfileUpdateRequest request) {
-    // String username =
-    // SecurityContextHolder.getContext().getAuthentication().getName();
-    // User user = userRepository.findByUsername(username)
-    // .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-
-    // if (request.getFullName() != null && !request.getFullName().isBlank()) {
-    // user.setFullName(request.getFullName());
-    // }
-    // if (request.getPassword() != null && !request.getPassword().isBlank()) {
-    // user.setPassword(passwordEncoder.encode(request.getPassword()));
-    // }
-
-    // return userMapper.toUserResponse(userRepository.save(user));
-    // }
-
     // findOne
     public UserResponse getUserByUsername(String username) {
         User user = userRepository.findByUsernameAndEnabledTrue(username)
@@ -61,9 +44,22 @@ public class UserService {
     }
 
     // findAll
+    // @PreAuthorize("hasRole('ADMIN')")
+    // public Page<UserResponse> getUsers(PageRequest pageRequest) {
+    //     Page<User> userPage = userRepository.findAllByEnabledTrue(pageRequest);
+    //     return userPage.map(userMapper::toUserResponse);
+    // }
+
     @PreAuthorize("hasRole('ADMIN')")
-    public Page<UserResponse> getUsers(PageRequest pageRequest) {
-        Page<User> userPage = userRepository.findAllByEnabledTrue(pageRequest);
+    public Page<UserResponse> getUsers(String search, PageRequest pageRequest) {
+        Page<User> userPage;
+        if (search == null || search.isBlank()) {
+            userPage = userRepository.findAllByEnabledTrue(pageRequest);
+        } else {
+            userPage = userRepository
+                    .findByUsernameContainingIgnoreCaseOrFullNameContainingIgnoreCaseAndEnabledTrue(
+                            search, search, pageRequest);
+        }
         return userPage.map(userMapper::toUserResponse);
     }
 
