@@ -13,8 +13,8 @@ export default function DashboardPage({ api }) {
       setLoading(true);
       try {
         const [evRes, usRes] = await Promise.all([
-          api.get("/events?page=1&size=100"),
-          api.get("/users?page=1&size=100"),
+          api.get("/events/admin/all?size=1000"),
+          api.get("/users?page=1&size=1000"),
         ]);
 
         const evList = evRes.result?.content ?? [];

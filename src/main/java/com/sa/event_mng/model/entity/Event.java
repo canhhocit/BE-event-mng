@@ -38,6 +38,12 @@ public class Event extends BaseEntity {
     @Column(name = "end_time")
     private LocalDateTime endTime;
 
+    @Column(name = "sale_start_date")
+    private LocalDateTime saleStartDate;
+
+    @Column(name = "sale_end_date")
+    private LocalDateTime saleEndDate;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 

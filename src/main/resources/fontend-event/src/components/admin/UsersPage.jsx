@@ -74,20 +74,14 @@ export default function UsersPage({ api }) {
       </div>
 
       {/* Stats Row */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-4">
-          <UserStat label="Tổng thành viên" value={users.length} color="#6c5ce7" icon="👥" />
+      <div className="row g-2 mb-4">
+        <div className="col-md-6">
+          <UserStat label="Tổng người dùng" value={users.length} color="#6c5ce7" icon="👥" />
         </div>
-        <div className="col-md-4">
+        <div className="col-md-6">
           <UserStat label="Ban tổ chức (Organizer)" value={users.filter(u => u.role === 'ORGANIZER').length} color="#00b894" icon="🏢" />
         </div>
-        <div className="col-md-4">
-          <UserStat label="Tài khoản mới" value={users.filter(u => {
-            const date = new Date(u.createdAt);
-            const now = new Date();
-            return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-          }).length} color="#0984e3" icon="✨" />
-        </div>
+        
       </div>
 
       <div className="card border-0 shadow-sm" style={{ borderRadius: '16px', overflow: 'hidden' }}>

@@ -49,6 +49,13 @@ public class OrderService {
                 .map(CartItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // Validate each item: Event must be OPENING
+        for (CartItem item : cart.getItems()) {
+            if (item.getTicketType().getEvent().getStatus() != com.sa.event_mng.model.enums.EventStatus.OPENING) {
+                throw new AppException(ErrorCode.EVENT_NOT_OPENING);
+            }
+        }
+
         // Create Order
         Order order = Order.builder()
                 .customer(user)
@@ -73,8 +80,7 @@ public class OrderService {
         order.setItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
-        // Simulate successful payment for all electronic methods (MOMO, VNPAY,
-        // BANKING).
+        // Simulate successful payment
         completePayment(savedOrder.getId());
 
         // Clear cart
@@ -99,7 +105,7 @@ public class OrderService {
 
             // Check inventory
             if (tt.getRemainingQuantity() < item.getQuantity()) {
-                throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION); // Out of stock
+                throw new AppException(ErrorCode.TICKET_NOT_ENOUGH);
             }
             tt.setRemainingQuantity(tt.getRemainingQuantity() - item.getQuantity());
             ticketTypeRepository.save(tt);

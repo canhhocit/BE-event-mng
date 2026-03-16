@@ -98,15 +98,11 @@ public class EventSeeder {
 
     private EventStatus randomEventStatus(LocalDateTime startTime, LocalDateTime endTime) {
         LocalDateTime now = LocalDateTime.now();
-
-        EventStatus[] values1 = {EventStatus.DRAFT, EventStatus.PUBLISHED, EventStatus.CANCELLED};
-
-        EventStatus[] values2 = {EventStatus.COMPLETED, EventStatus.CANCELLED, EventStatus.DRAFT};
-
-        if (endTime.isBefore(now) || (startTime.isBefore(now) && endTime.isAfter(now))) {
-            return values1[random.nextInt(values1.length)];
-        } else {
-            return values2[random.nextInt(values2.length)];
-        }
+        
+        if (endTime.isBefore(now)) return EventStatus.COMPLETED;
+        if (startTime.isBefore(now)) return EventStatus.OPENING;
+        
+        EventStatus[] futureStatuses = {EventStatus.PENDING, EventStatus.UPCOMING, EventStatus.CANCELLED};
+        return futureStatuses[random.nextInt(futureStatuses.length)];
     }
 }

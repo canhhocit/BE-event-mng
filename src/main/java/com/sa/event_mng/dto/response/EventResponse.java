@@ -17,6 +17,8 @@ public class EventResponse {
     private String location;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private LocalDateTime saleStartDate;
+    private LocalDateTime saleEndDate;
     private String description;
     private EventStatus status;
     private List<String> imageUrls;

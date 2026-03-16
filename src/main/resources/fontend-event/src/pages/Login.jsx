@@ -73,7 +73,13 @@ export default function Login() {
 
         const payload = JSON.parse(atob(data.result.token.split(".")[1]));
 
-        navigate(payload.scope === "ADMIN" ? "/admin" : "/");
+        if (payload.scope === "ADMIN") {
+          navigate("/admin");
+        } else if (payload.scope === "ORGANIZER") {
+          navigate("/organizer");
+        } else {
+          navigate("/");
+        }
         // const role = payload.scope === "ADMIN"
         //     ? "ADMIN"
         //     : payload.scope === "ORGANIZER"

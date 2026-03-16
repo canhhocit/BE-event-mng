@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@lombok.extern.slf4j.Slf4j
 public class EventService {
 
         EventRepository eventRepository;
@@ -38,9 +40,10 @@ public class EventService {
         EventMapper eventMapper;
 
         @Transactional
-        // @PreAuthorize("hasRole('ORGANIZER') or hasRole('ADMIN')")
         @PreAuthorize("hasRole('ORGANIZER')")
         public EventResponse create(EventRequest request) {
+                log.info("Đang tạo sự kiện mới: Name={}, CategoryID={}", request.getName(), request.getCategoryId());
+                
                 String username = SecurityContextHolder.getContext().getAuthentication().getName();
                 User organizer = userRepository.findByUsername(username)
                                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
@@ -55,8 +58,10 @@ public class EventService {
                                 .location(request.getLocation())
                                 .startTime(request.getStartTime())
                                 .endTime(request.getEndTime())
+                                .saleStartDate(request.getSaleStartDate())
+                                .saleEndDate(request.getSaleEndDate())
                                 .description(request.getDescription())
-                                .status(request.getStatus() != null ? request.getStatus() : EventStatus.DRAFT)
+                                .status(request.getStatus() != null ? request.getStatus() : EventStatus.PENDING)
                                 .build();
 
                 if (request.getFiles() != null && !request.getFiles().isEmpty()) {
@@ -68,7 +73,12 @@ public class EventService {
         }
 
         public Page<EventResponse> getAllPublished(PageRequest pageRequest) {
-                Page<Event> events = eventRepository.findByStatus(EventStatus.PUBLISHED, pageRequest);
+                List<EventStatus> activeStatuses = List.of(
+                                EventStatus.UPCOMING,
+                                EventStatus.OPENING,
+                                EventStatus.CLOSED
+                );
+                Page<Event> events = eventRepository.findByStatusIn(activeStatuses, pageRequest);
                 return events.map(eventMapper::toEventResponse);
         }
 
@@ -85,19 +95,12 @@ public class EventService {
         public EventResponse update(Long id, EventRequest request) {
                 Event event = eventRepository.findById(id)
                                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
-
-//                // Security check: Only owner or admin
-//                String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-//                if (!event.getOrganizer().getUsername().equals(currentUsername) &&
-//                                !SecurityContextHolder.getContext().getAuthentication().getAuthorities().stream()
-//                                                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-//                        throw new AppException(ErrorCode.UNAUTHORIZED);
-//                }
-
                 event.setName(request.getName());
                 event.setLocation(request.getLocation());
                 event.setStartTime(request.getStartTime());
                 event.setEndTime(request.getEndTime());
+                event.setSaleStartDate(request.getSaleStartDate());
+                event.setSaleEndDate(request.getSaleEndDate());
                 event.setDescription(request.getDescription());
                 if (request.getStatus() != null)
                         event.setStatus(request.getStatus());
@@ -166,8 +169,20 @@ public class EventService {
         public EventResponse updateStatus(Long id, EventStatus status) {
                 Event event = eventRepository.findById(id)
                                 .orElseThrow(() -> new AppException(ErrorCode.EVENT_NOT_FOUND));
+                
+                //duyệt -> UPCOMING, từ chối -> CANCELLED
                 event.setStatus(status);
+                
                 return eventMapper.toEventResponse(eventRepository.save(event));
+        }
+
+        @SuppressWarnings("unused")
+        private EventStatus determineInitialStatus(Event event, LocalDateTime now) {
+                // Xác định trạng thái ngay lập tức dựa trên thời gian khi vừa được duyệt
+                if (event.getEndTime() != null && now.isAfter(event.getEndTime())) return EventStatus.COMPLETED;
+                if (event.getSaleEndDate() != null && now.isAfter(event.getSaleEndDate())) return EventStatus.CLOSED;
+                if (event.getSaleStartDate() != null && (now.isAfter(event.getSaleStartDate()) || now.isEqual(event.getSaleStartDate()))) return EventStatus.OPENING;
+                return EventStatus.UPCOMING;
         }
 
 }

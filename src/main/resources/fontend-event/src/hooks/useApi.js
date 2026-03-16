@@ -14,22 +14,32 @@ export function useApi() {
   );
 
   const post = useCallback(
-    (path, body) =>
-      fetch(`${BASE}${path}`, {
+    (path, body) => {
+      const isFormData = body instanceof FormData;
+      return fetch(`${BASE}${path}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      }).then((r) => r.json()),
+        headers: {
+          ...(isFormData ? {} : { "Content-Type": "application/json" }),
+          Authorization: `Bearer ${token}`,
+        },
+        body: isFormData ? body : JSON.stringify(body),
+      }).then((r) => r.json());
+    },
     [token]
   );
 
   const put = useCallback(
-    (path, body) =>
-      fetch(`${BASE}${path}`, {
+    (path, body) => {
+      const isFormData = body instanceof FormData;
+      return fetch(`${BASE}${path}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-      }).then((r) => r.json()),
+        headers: {
+          ...(isFormData ? {} : { "Content-Type": "application/json" }),
+          Authorization: `Bearer ${token}`,
+        },
+        body: isFormData ? body : JSON.stringify(body),
+      }).then((r) => r.json());
+    },
     [token]
   );
 

@@ -34,7 +34,7 @@ export default function StatisticsPage({ api }) {
 
         // 1. Fetch dữ liệu
         const [eventsRes, usersRes, statusRes] = await Promise.all([
-          api.get("/events?page=1&size=1000"),
+          api.get("/events/admin/all?size=1000"),
           api.get("/users?page=1&size=1000"),
           api.get(`/statistics-event/by-status/1/${now.getFullYear()}`)
         ]);

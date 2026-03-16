@@ -23,10 +23,18 @@ public class EventRequest {
     private String location;
 
     @NotNull(message = "START_TIME_REQUIRED")
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime startTime;
 
     @NotNull(message = "END_TIME_REQUIRED")
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime endTime;
+
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime saleStartDate;
+
+    @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE_TIME)
+    private LocalDateTime saleEndDate;
 
     private String description;
 

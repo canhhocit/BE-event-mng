@@ -87,6 +87,94 @@ function EventDetailModal({ event, onClose }) {
   );
 }
 
+// ── Modal Tạo sự kiện ──────────────────────────────────────────────────────
+function CreateEventModal({ onClose, onSave, categories }) {
+  const [formData, setFormData] = useState({
+    name: "", categoryId: "", location: "",
+    startTime: "", endTime: "", saleStartDate: "", saleEndDate: "",
+    description: "", files: null
+  });
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    setFormData(prev => ({ ...prev, [name]: files ? files : value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave(formData);
+  };
+
+  return (
+    <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', zIndex: 1100 }}>
+      <div className="modal-dialog modal-lg modal-dialog-centered">
+        <div className="modal-content border-0 shadow-lg" style={{ borderRadius: '20px' }}>
+          <div className="modal-header border-0 p-4 pb-0">
+            <h5 className="fw-bold mb-0">📅 Tạo sự kiện mới</h5>
+            <button type="button" className="btn-close" onClick={onClose}></button>
+          </div>
+          <form onSubmit={handleSubmit}>
+            <div className="modal-body p-4">
+              <div className="row g-3">
+                <div className="col-md-12">
+                  <label className="form-label small fw-bold text-muted">Tên sự kiện</label>
+                  <input type="text" name="name" className="form-control shadow-none bg-light border-0" required value={formData.name} onChange={handleChange} placeholder="VD: Liveshow Chillies" />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">Danh mục</label>
+                  <select name="categoryId" className="form-select shadow-none bg-light border-0" required value={formData.categoryId} onChange={handleChange}>
+                    <option value="">Chọn danh mục</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold text-muted">Địa điểm</label>
+                  <input type="text" name="location" className="form-control shadow-none bg-light border-0" required value={formData.location} onChange={handleChange} placeholder="VD: TP.HCM" />
+                </div>
+                
+                <div className="col-md-6">
+                  <div className="p-3 bg-primary-subtle rounded-3">
+                    <label className="form-label small fw-bold text-primary">🛒 Ngày Bắt đầu bán vé</label>
+                    <input type="datetime-local" name="saleStartDate" className="form-control border-0 shadow-sm" required value={formData.saleStartDate} onChange={handleChange} />
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="p-3 bg-danger-subtle rounded-3">
+                    <label className="form-label small fw-bold text-danger">🛑 Ngày Kết thúc bán vé</label>
+                    <input type="datetime-local" name="saleEndDate" className="form-control border-0 shadow-sm" required value={formData.saleEndDate} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <div className="col-md-6">
+                  <div className="p-3 bg-light rounded-3">
+                    <label className="form-label small fw-bold text-secondary">🎉 Thời gian diễn ra</label>
+                    <input type="datetime-local" name="startTime" className="form-control border-0 shadow-sm" required value={formData.startTime} onChange={handleChange} />
+                  </div>
+                </div>
+                <div className="col-md-6">
+                  <div className="p-3 bg-light rounded-3">
+                    <label className="form-label small fw-bold text-secondary">🏁 Thời gian kết thúc</label>
+                    <input type="datetime-local" name="endTime" className="form-control border-0 shadow-sm" required value={formData.endTime} onChange={handleChange} />
+                  </div>
+                </div>
+
+                <div className="col-12">
+                  <label className="form-label small fw-bold text-muted">Hình ảnh sự kiện</label>
+                  <input type="file" name="files" multiple className="form-control bg-light border-0" onChange={handleChange} accept="image/*" />
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer border-0 p-4 pt-0">
+              <button type="button" className="btn btn-light px-4 rounded-pill fw-bold" onClick={onClose}>Hủy</button>
+              <button type="submit" className="btn btn-primary px-5 rounded-pill fw-bold shadow">Tạo sự kiện</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Card sự kiện ────────────────────────────────────────────────────────────
 function EventCard({ event, onDetail, onChangeStatus, changingId }) {
   let totalSold = 0, totalQty = 0;
@@ -110,7 +198,13 @@ function EventCard({ event, onDetail, onChangeStatus, changingId }) {
       </div>
 
       <div className="card-body p-3 d-flex flex-column">
-        <h6 className="fw-bold text-dark text-truncate mb-1" title={event.name}>{event.name}</h6>
+        <h6 className="fw-bold text-dark text-truncate mb-0" title={event.name}>{event.name}</h6>
+        <div className="text-primary small mb-1 fw-medium" style={{ fontSize: '11px' }}>
+          📅 {new Date(event.startTime).toLocaleString('vi-VN', { 
+            day: '2-digit', month: '2-digit', year: 'numeric', 
+            hour: '2-digit', minute: '2-digit' 
+          })}
+        </div>
         <p className="text-muted small mb-3 text-truncate" style={{ fontSize: '11px' }}>{event.organizerName}</p>
         
         <div className="mt-auto">
@@ -126,15 +220,25 @@ function EventCard({ event, onDetail, onChangeStatus, changingId }) {
             <button className="btn btn-sm btn-outline-primary flex-grow-1 border-2 fw-bold" style={{ fontSize: '11px', borderRadius: '8px' }} onClick={() => onDetail(event)}>
               CHI TIẾT
             </button>
-            {(event.status === 'DRAFT' || event.status === 'PENDING') && (
-              <button 
-                className="btn btn-sm btn-success border-0 shadow-sm"
-                style={{ fontSize: '11px', borderRadius: '8px', padding: '0 12px' }}
-                disabled={changingId === event.id}
-                onClick={() => onChangeStatus(event, 'PUBLISHED')}
-              >
-                {changingId === event.id ? '...' : 'DUYỆT'}
-              </button>
+            {(event.status === 'PENDING') && (
+              <div className="d-flex gap-1 flex-grow-1">
+                <button 
+                  className="btn btn-sm btn-success border-0 shadow-sm flex-grow-1"
+                  style={{ fontSize: '10px', borderRadius: '8px' }}
+                  disabled={changingId === event.id}
+                  onClick={() => onChangeStatus(event, 'UPCOMING')}
+                >
+                  {changingId === event.id ? '...' : 'DUYỆT'}
+                </button>
+                <button 
+                  className="btn btn-sm btn-danger border-0 shadow-sm flex-grow-1"
+                  style={{ fontSize: '10px', borderRadius: '8px' }}
+                  disabled={changingId === event.id}
+                  onClick={() => onChangeStatus(event, 'CANCELLED')}
+                >
+                  TỪ CHỐI
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -146,10 +250,12 @@ function EventCard({ event, onDetail, onChangeStatus, changingId }) {
 // ── Trang chính ─────────────────────────────────────────────────────────────
 const STATUSES = [
   { value: "",          label: "Tất cả trạng thái" },
-  { value: "PUBLISHED", label: "Đã đăng"           },
-  { value: "DRAFT",     label: "Nháp"               },
-  { value: "CANCELLED", label: "Đã hủy"             },
-  { value: "COMPLETED", label: "Hoàn thành"         },
+  { value: "PENDING",   label: "Chờ duyệt"         },
+  { value: "UPCOMING",  label: "Sắp diễn ra"       },
+  { value: "OPENING",   label: "Đang bán vé"       },
+  { value: "CLOSED",    label: "Hết thời gian bán vé"        },
+  { value: "COMPLETED", label: "Đã kết thúc sự kiện"       },
+  { value: "CANCELLED", label: "Đã hủy/Từ chối"    },
 ];
 
 export default function EventsPage({ api }) {
@@ -162,7 +268,13 @@ export default function EventsPage({ api }) {
   const [status, setStatus]           = useState("");
   const [refetch, setRefetch]         = useState(0);
   const [detail, setDetail]           = useState(null);
+  const [showCreate, setShowCreate]   = useState(false);
+  const [categories, setCategories]   = useState([]);
   const [changingId, setChangingId]   = useState(null);
+
+  useEffect(() => {
+    api.get("/categories").then(res => setCategories(res.result || []));
+  }, [api]);
 
   useEffect(() => {
     setLoading(true);
@@ -186,26 +298,59 @@ export default function EventsPage({ api }) {
   const handleChangeStatus = async (event, newStatus) => {
     if (!window.confirm(`Xác nhận thay đổi trạng thái sự kiện "${event.name}"?`)) return;
     setChangingId(event.id);
-    await api.patch(`/events/${event.id}/status?status=${newStatus}`);
-    setChangingId(null);
-    setRefetch(n => n + 1);
+    try {
+      await api.patch(`/events/${event.id}/status?status=${newStatus}`);
+      setRefetch(n => n + 1);
+    } catch (err) {
+      alert("Lỗi khi thay đổi trạng thái!");
+    } finally {
+      setChangingId(null);
+    }
+  };
+
+  const handleSaveEvent = async (formData) => {
+    try {
+      const data = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key === 'files' && formData.files) {
+          for (let i = 0; i < formData.files.length; i++) {
+            data.append("files", formData.files[i]);
+          }
+        } else if (formData[key]) {
+          data.append(key, formData[key]);
+        }
+      });
+
+      await api.post("/events", data);
+      setShowCreate(false);
+      setRefetch(n => n + 1);
+      alert("Tạo sự kiện thành công!");
+    } catch (err) {
+      alert("Lỗi khi tạo sự kiện. Vui lòng kiểm tra lại.");
+    }
   };
 
   return (
     <div className="animate-fade-in">
       {detail && <EventDetailModal event={detail} onClose={() => setDetail(null)} />}
+      {showCreate && <CreateEventModal categories={categories} onClose={() => setShowCreate(false)} onSave={handleSaveEvent} />}
 
-      <div className="mb-4">
-        <h4 className="fw-bold mb-1 font-inter">📅 Quản lý sự kiện</h4>
-        <p className="text-secondary small">Theo dõi, duyệt và quản lý các sự kiện trên hệ thống.</p>
+      <div className="mb-4 d-flex justify-content-between align-items-center">
+        <div>
+          <h4 className="fw-bold mb-1 font-inter">📅 Quản lý sự kiện</h4>
+          <p className="text-secondary small">Theo dõi, duyệt và quản lý các sự kiện trên hệ thống.</p>
+        </div>
+        <button className="btn btn-primary px-4 rounded-pill fw-bold shadow" onClick={() => setShowCreate(true)}>
+           + Tạo sự kiện
+        </button>
       </div>
 
       {/* Quick Stats Row */}
       <div className="row g-3 mb-4">
-        <div className="col-md-3"><QuickStat label="Sự kiện chờ duyệt" value={events.filter(e => e.status === 'PENDING' || e.status === 'DRAFT').length} color="#fdcb6e" icon="⏳" /></div>
-        <div className="col-md-3"><QuickStat label="Đang hoạt động" value={events.filter(e => e.status === 'PUBLISHED').length} color="#00b894" icon="✅" /></div>
-        <div className="col-md-3"><QuickStat label="Hoàn thành" value={events.filter(e => e.status === 'COMPLETED').length} color="#0984e3" icon="🏁" /></div>
-        <div className="col-md-3"><QuickStat label="Tổng sự kiện" value={events.length} color="#6c5ce7" icon="📶" /></div>
+        <div className="col-md-3"><QuickStat label="Đang chờ duyệt" value={events.filter(e => e.status === 'PENDING').length} color="#fdcb6e" icon="⏳" /></div>
+        <div className="col-md-3"><QuickStat label="Đang mở bán" value={events.filter(e => e.status === 'OPENING').length} color="#00b894" icon="🎟" /></div>
+        <div className="col-md-3"><QuickStat label="Sắp diễn ra" value={events.filter(e => e.status === 'UPCOMING').length} color="#0984e3" icon="⏳" /></div>
+        <div className="col-md-3"><QuickStat label="Đã hoàn thành" value={events.filter(e => e.status === 'COMPLETED').length} color="#6c5ce7" icon="🏁" /></div>
       </div>
 
       <div className="card border-0 shadow-sm" style={{ borderRadius: '16px' }}>

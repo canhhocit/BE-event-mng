@@ -12,17 +12,15 @@ export function RoleBadge({ role }) {
 
 // Badge màu theo status
 export function StatusBadge({ status }) {
-  const map = {
-    PUBLISHED: "success",
-    DRAFT: "secondary",
-    CANCELLED: "danger",
-    COMPLETED: "info",
-    CONFIRMED: "success",
-    PENDING: "warning",
-    PAID: "success",
-    FAILED: "danger",
-  };
-  return <span className={`badge bg-${map[status] ?? "secondary"}`}>{status}</span>;
+  switch (status) {
+    case 'UPCOMING':  return <span className="badge bg-info-subtle text-info px-3 rounded-pill">SẮP DIỄN RA</span>;
+    case 'OPENING':   return <span className="badge bg-success-subtle text-success px-3 rounded-pill">ĐANG BÁN VÉ</span>;
+    case 'CLOSED':    return <span className="badge bg-secondary-subtle text-secondary px-3 rounded-pill">ĐÓNG BÁN VÉ</span>;
+    case 'COMPLETED': return <span className="badge bg-primary-subtle text-primary px-3 rounded-pill">KẾT THÚC</span>;
+    case 'CANCELLED': return <span className="badge bg-danger-subtle text-danger px-3 rounded-pill">ĐÃ HỦY</span>;
+    case 'PENDING':   return <span className="badge bg-warning-subtle text-warning px-3 rounded-pill">CHỜ DUYỆT</span>;
+    default:          return <span className="badge bg-light text-dark px-3 rounded-pill">{status}</span>;
+  }
 }
 
 // Component phân trang dùng chung

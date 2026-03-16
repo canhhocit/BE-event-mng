@@ -11,6 +11,8 @@ import com.sa.event_mng.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +24,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class CartService {
 
     CartRepository cartRepository;
@@ -32,6 +35,13 @@ public class CartService {
     @Transactional
     public CartResponse addToCart(CartItemRequest request) {
         User user = getCurrentUser();
+        log.info("Adding to cart: User={}, TicketType={}, Quantity={}", 
+                user.getUsername(), request.getTicketTypeId(), request.getQuantity());
+
+        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        }
+
         Cart cart = cartRepository.findByCustomerId(user.getId())
                 .orElseGet(() -> cartRepository.save(Cart.builder()
                         .customer(user)
@@ -40,16 +50,35 @@ public class CartService {
                         .build()));
 
         TicketType ticketType = ticketTypeRepository.findById(request.getTicketTypeId())
-                .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
+                .orElseThrow(() -> new AppException(ErrorCode.TICKET_TYPE_NOT_FOUND));
 
-        // Check if item already in cart
+        // check event status
+        if (ticketType.getEvent().getStatus() != com.sa.event_mng.model.enums.EventStatus.OPENING) {
+            log.warn("Event is not OPENING: EventId={}", ticketType.getEvent().getId());
+            throw new AppException(ErrorCode.EVENT_NOT_OPENING);
+        }
+
+        // check stock
         Optional<CartItem> existingItem = cart.getItems().stream()
                 .filter(item -> item.getTicketType().getId().equals(request.getTicketTypeId()))
                 .findFirst();
 
+        int currentInCart = existingItem.map(CartItem::getQuantity).orElse(0);
+        int totalQuantityRequested = currentInCart + request.getQuantity();
+
+        log.info("Stock check: Remaining={}, InCart={}, RequestedNew={}, TotalRequested={}", 
+                ticketType.getRemainingQuantity(), currentInCart, request.getQuantity(), totalQuantityRequested);
+
+        if (totalQuantityRequested > ticketType.getRemainingQuantity()) {
+            log.error("Not enough tickets: Stock={}, Requested={}", 
+                    ticketType.getRemainingQuantity(), totalQuantityRequested);
+            throw new AppException(ErrorCode.TICKET_NOT_ENOUGH);
+        }
+
+        // ins or update
         if (existingItem.isPresent()) {
             CartItem item = existingItem.get();
-            item.setQuantity(item.getQuantity() + request.getQuantity());
+            item.setQuantity(totalQuantityRequested);
             item.setSubtotal(item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity())));
         } else {
             CartItem newItem = CartItem.builder()

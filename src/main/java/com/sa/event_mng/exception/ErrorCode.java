@@ -62,6 +62,9 @@ public enum ErrorCode {
 
     // Cart & Order
     CART_EMPTY(5001, "Your cart is empty", HttpStatus.BAD_REQUEST),
+    TICKET_TYPE_NOT_FOUND(5002, "Ticket type not found", HttpStatus.NOT_FOUND),
+    EVENT_NOT_OPENING(5003, "Event is not opening for sale", HttpStatus.BAD_REQUEST),
+    TICKET_NOT_ENOUGH(5004, "Not enough tickets available", HttpStatus.BAD_REQUEST),
     ORDER_NOT_FOUND(6001, "Order not found", HttpStatus.NOT_FOUND);
 
     private int code;
