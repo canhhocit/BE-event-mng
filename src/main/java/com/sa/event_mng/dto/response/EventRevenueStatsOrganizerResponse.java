@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EventRevenueStatsResponse {
+public class EventRevenueStatsOrganizerResponse {
     private String eventName;
     private BigDecimal totalRevenue;
     private Integer ticketsSold;

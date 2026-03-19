@@ -1,9 +1,6 @@
 package com.sa.event_mng.controller;
 
-import com.sa.event_mng.dto.response.ApiResponse;
-import com.sa.event_mng.dto.response.EventRevenueStatsResponse;
-import com.sa.event_mng.dto.response.EventStatusStatsResponse;
-import com.sa.event_mng.dto.response.EventTemporalStatsResponse;
+import com.sa.event_mng.dto.response.*;
 import com.sa.event_mng.service.StatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,7 +44,13 @@ public class StatisticsController {
 
     @GetMapping("/statistics-revenue/{id_organizer}")
     @Operation(summary = "Thống kê doanh thu (chủ sử kiện)")
-    public ApiResponse<List<EventRevenueStatsResponse>> getStatisticsRevenue(@PathVariable("id_organizer") Long idOrganizer) {
-        return ApiResponse.<List<EventRevenueStatsResponse>>builder().result(statisticsService.getEventRevenueStats(idOrganizer)).build();
+    public ApiResponse<List<EventRevenueStatsOrganizerResponse>> getStatisticsRevenueOrganizer(@PathVariable("id_organizer") Long idOrganizer) {
+        return ApiResponse.<List<EventRevenueStatsOrganizerResponse>>builder().result(statisticsService.getEventRevenueStatsOrganizer(idOrganizer)).build();
+    }
+
+    @GetMapping("/statistics-revenue/admin")
+    @Operation(summary = "Thống kê doanh thu (admin, tính tổng tiền dịch vụ)")
+    public ApiResponse<EventRevenueStatsAdminResponse> getStatisticsRevenueAdmin() {
+        return ApiResponse.<EventRevenueStatsAdminResponse>builder().result(statisticsService.getEventRevenueStatsAdmin()).build();
     }
 }

@@ -26,8 +26,17 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "customer_id")
     private User customer;
 
+    @Column(name = "organizer_amount", nullable = false, precision = 12, scale = 2)
+    private BigDecimal organizerAmount; // tổng tiền btc ăn
+
+    @Column(name="platform_fee_rate", nullable = false)
+    private Float platformFeeRate;  //phần trăm tiền admin ăn
+
+    @Column(name = "service_fee", nullable = false, precision = 12, scale = 2)
+    private BigDecimal serviceFee;  //tổng tiền admin ăn
+
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount; //tổng tiền khách phải trả
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
