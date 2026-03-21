@@ -1,10 +1,12 @@
 package com.sa.event_mng.service;
 
-import com.sa.event_mng.dto.response.EventRevenueStatsResponse;
+import com.sa.event_mng.dto.response.EventRevenueStatsAdminResponse;
+import com.sa.event_mng.dto.response.EventRevenueStatsOrganizerResponse;
 import com.sa.event_mng.dto.response.EventStatusStatsResponse;
 import com.sa.event_mng.dto.response.EventTemporalStatsResponse;
 import com.sa.event_mng.mapper.StatsMapper;
-import com.sa.event_mng.model.projection.EventRevenueStatsProjection;
+import com.sa.event_mng.model.projection.EventRevenueStatsAdminProjection;
+import com.sa.event_mng.model.projection.EventRevenueStatsOrganizerProjection;
 import com.sa.event_mng.model.projection.EventStatusStatsProjection;
 import com.sa.event_mng.model.projection.EventTemporalStatsProjection;
 import com.sa.event_mng.repository.StatisticsRepository;
@@ -81,10 +83,16 @@ public class StatisticsService {
     }
 
     @PreAuthorize("hasRole('ORGANIZER') and @securityCustom.isCurrentUser(#idOrganizer, authentication)")
-    public List<EventRevenueStatsResponse> getEventRevenueStats(Long idOrganizer) {
-        List<EventRevenueStatsProjection> eventRevenueStats = statisticsRepository.findEventRevenueStats(idOrganizer);
+    public List<EventRevenueStatsOrganizerResponse> getEventRevenueStatsOrganizer(Long idOrganizer) {
+        List<EventRevenueStatsOrganizerProjection> eventRevenueStats = statisticsRepository.findEventRevenueOrganizerStats(idOrganizer);
         return eventRevenueStats.stream()
                 .map(statsMapper::toEventRevenueStatsResponse)
                 .toList();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    public EventRevenueStatsAdminResponse getEventRevenueStatsAdmin() {
+        EventRevenueStatsAdminProjection eventRevenueStats = statisticsRepository.findEventRevenueAdminStats();
+        return statsMapper.toEventRevenueStatsResponse(eventRevenueStats);
     }
 }

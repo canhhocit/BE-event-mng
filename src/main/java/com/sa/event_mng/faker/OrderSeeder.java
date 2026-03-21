@@ -49,9 +49,18 @@ public class OrderSeeder {
             OrderStatus orderStatus = randomOrderStatus();
             PaymentStatus paymentStatus = randomPaymentStatus(orderStatus);
 
+            BigDecimal organizerAmount = randomAmount();
+            float platformFeeRate = 0.1f;
+            BigDecimal serviceFee = organizerAmount.multiply(BigDecimal.valueOf(platformFeeRate))
+                    .setScale(2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal totalAmount = organizerAmount.add(serviceFee);
+
             Order order = new Order();
             order.setCustomer(customer);
-            order.setTotalAmount(randomAmount());
+            order.setOrganizerAmount(organizerAmount);
+            order.setPlatformFeeRate(platformFeeRate);
+            order.setServiceFee(serviceFee);
+            order.setTotalAmount(totalAmount);
             order.setPaymentMethod(paymentMethod);
             order.setPaymentStatus(paymentStatus);
             order.setOrderStatus(orderStatus);

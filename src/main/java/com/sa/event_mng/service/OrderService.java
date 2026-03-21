@@ -5,7 +5,10 @@ import com.sa.event_mng.exception.AppException;
 import com.sa.event_mng.exception.ErrorCode;
 import com.sa.event_mng.mapper.OrderMapper;
 import com.sa.event_mng.model.entity.*;
-import com.sa.event_mng.model.enums.*;
+import com.sa.event_mng.model.enums.OrderStatus;
+import com.sa.event_mng.model.enums.PaymentMethod;
+import com.sa.event_mng.model.enums.PaymentStatus;
+import com.sa.event_mng.model.enums.TicketStatus;
 import com.sa.event_mng.repository.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -44,10 +47,19 @@ public class OrderService {
             throw new AppException(ErrorCode.CART_EMPTY);
         }
 
-        // Calculate total
-        BigDecimal total = cart.getItems().stream()
+        // tổng tiền btc ăn
+        BigDecimal organizerAmount = cart.getItems().stream()
                 .map(CartItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        //phần trăm tiền admin ăn
+        float platformFeeRate = 0.1f;
+
+        //tổng tiền admin ăn
+        BigDecimal serviceFee = organizerAmount.multiply(BigDecimal.valueOf(platformFeeRate));
+
+        // Tính tổng tiền khách phải trả
+        BigDecimal totalAmount = organizerAmount.add(serviceFee);
 
         // Validate each item: Event must be OPENING
         for (CartItem item : cart.getItems()) {
@@ -59,7 +71,10 @@ public class OrderService {
         // Create Order
         Order order = Order.builder()
                 .customer(user)
-                .totalAmount(total)
+                .organizerAmount(organizerAmount)
+                .serviceFee(serviceFee)
+                .platformFeeRate(platformFeeRate)
+                .totalAmount(totalAmount)
                 .paymentMethod(paymentMethod)
                 .paymentStatus(PaymentStatus.PENDING)
                 .orderStatus(OrderStatus.PENDING)

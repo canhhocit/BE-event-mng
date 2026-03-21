@@ -1,7 +1,8 @@
 package com.sa.event_mng.repository;
 
 import com.sa.event_mng.model.entity.Event;
-import com.sa.event_mng.model.projection.EventRevenueStatsProjection;
+import com.sa.event_mng.model.projection.EventRevenueStatsAdminProjection;
+import com.sa.event_mng.model.projection.EventRevenueStatsOrganizerProjection;
 import com.sa.event_mng.model.projection.EventStatusStatsProjection;
 import com.sa.event_mng.model.projection.EventTemporalStatsProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,7 +39,6 @@ public interface StatisticsRepository extends JpaRepository<Event, Long> {
     List<EventTemporalStatsProjection> findEventTemporalStats(@Param("dayOfWeek") Integer dayOfWeek);
 
     @Query(value = """
-
     select e.name as eventName,
     sum(oi.subtotal) as totalRevenue,
     sum(tt.total_quantity - tt.remaining_quantity) as ticketsSold,
@@ -53,5 +53,11 @@ public interface StatisticsRepository extends JpaRepository<Event, Long> {
     where e.organizer_id = :id
     group by e.id
     """, nativeQuery = true)
-    List<EventRevenueStatsProjection> findEventRevenueStats(@Param("id") Long id);
+    List<EventRevenueStatsOrganizerProjection> findEventRevenueOrganizerStats(@Param("id") Long id);
+
+    @Query(value = """
+    SELECT sum(service_fee) as totalRevenue
+    FROM event_mng.orders
+    """, nativeQuery = true)
+    EventRevenueStatsAdminProjection findEventRevenueAdminStats();
 }
